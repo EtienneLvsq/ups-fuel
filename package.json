@@ -1,0 +1,12 @@
+{
+  "name": "ups-fuel",
+  "private": true,
+  "type": "module",
+  "description": "Publie chaque semaine le supplément carburant UPS Espagne en JSON, pour l'application T26.",
+  "scripts": {
+    "scrape": "node scrape.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.55.0"
+  }
+}

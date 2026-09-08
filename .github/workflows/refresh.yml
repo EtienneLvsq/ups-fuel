@@ -1,0 +1,47 @@
+# Rafraîchit le supplément carburant UPS Espagne et publie ups-fuel.json.
+# UPS met son barème à jour le lundi ; on lit la page le lundi matin, avec un
+# second passage le mercredi au cas où la publication aurait pris du retard.
+# Un échec laisse le JSON précédent intact et fait échouer le job (e-mail GitHub).
+name: Barème carburant UPS
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # lundi 06:00 UTC = 08:00 Madrid
+    - cron: '0 6 * * 3'   # mercredi, filet de sécurité
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Installer Playwright et Chromium
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Lire la page UPS
+        run: node scrape.mjs
+
+      - name: Publier si le barème a changé
+        run: |
+          if [ -z "$(git status --porcelain ups-fuel.json)" ]; then
+            echo "Barème inchangé — rien à publier."
+            exit 0
+          fi
+          DATE=$(node -e "console.log(require('./ups-fuel.json').effective_date)")
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ups-fuel.json
+          git commit -m "Barème carburant UPS du $DATE"
+          git push
