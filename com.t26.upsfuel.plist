@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Relève hebdomadaire du barème carburant UPS.
+     Installation :
+       cp com.t26.upsfuel.plist ~/Library/LaunchAgents/
+       launchctl load ~/Library/LaunchAgents/com.t26.upsfuel.plist
+     Désinstallation :
+       launchctl unload ~/Library/LaunchAgents/com.t26.upsfuel.plist -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.t26.upsfuel</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/etiennelevesque/APP/ups-fuel/refresh.sh</string>
+    </array>
+
+    <!-- UPS publie le lundi. Deux créneaux : lundi et jeudi, pour qu'une journée
+         sans réseau ne coûte pas une semaine entière. -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict>
+            <key>Weekday</key><integer>1</integer>
+            <key>Hour</key><integer>9</integer>
+            <key>Minute</key><integer>15</integer>
+        </dict>
+        <dict>
+            <key>Weekday</key><integer>4</integer>
+            <key>Hour</key><integer>9</integer>
+            <key>Minute</key><integer>15</integer>
+        </dict>
+    </array>
+
+    <!-- Si le Mac était éteint à l'heure dite, launchd rattrape au réveil. -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/etiennelevesque/APP/ups-fuel/refresh.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/etiennelevesque/APP/ups-fuel/refresh.log</string>
+</dict>
+</plist>
