@@ -1,0 +1,38 @@
+# Sonde jetable : le vrai Google Chrome (channel:chrome) passe-t-il là où le
+# Chromium fourni par Playwright se fait couper (ERR_HTTP2_PROTOCOL_ERROR) ?
+name: Sonde accès UPS
+on: { workflow_dispatch: }
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm init -y && npm i playwright
+      - run: npx playwright install --with-deps chrome
+      - run: |
+          cat > probe.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const URL = 'https://www.ups.com/es/es/support/shipping-support/shipping-costs-rates/fuel-surcharges';
+          for (const variante of [
+            { nom: 'chrome-reel',        opts: { channel: 'chrome' } },
+            { nom: 'chrome-sans-http2',  opts: { channel: 'chrome', args: ['--disable-http2'] } },
+            { nom: 'chromium-sans-http2',opts: { args: ['--disable-http2'] } },
+          ]) {
+            let b;
+            try {
+              b = await chromium.launch({ headless: true, ...variante.opts,
+                args: [...(variante.opts.args ?? []), '--no-sandbox', '--disable-blink-features=AutomationControlled'] });
+              const ctx = await b.newContext({ locale: 'es-ES', timezoneId: 'Europe/Madrid',
+                viewport: { width: 1440, height: 900 } });
+              const p = await ctx.newPage();
+              await p.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+              const html = await p.content();
+              console.log(`${variante.nom} : OK — titre="${await p.title()}" tableau=${/Fecha de inicio/.test(html)}`);
+            } catch (e) {
+              console.log(`${variante.nom} : ECHEC — ${e.message.split('\n')[0]}`);
+            } finally { if (b) await b.close(); }
+          }
+          JS
+          node probe.mjs
