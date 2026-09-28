@@ -1,8 +1,8 @@
 {
   "source_url": "https://www.ups.com/es/es/support/shipping-support/shipping-costs-rates/fuel-surcharges",
-  "scraped_at_utc": "2026-09-21T07:15:11Z",
-  "effective_date": "2026-09-21",
-  "standard_percent": 32.25,
-  "express_eu_percent": 54.0,
-  "express_non_eu_percent": 54.0
+  "scraped_at_utc": "2026-09-28T07:15:10Z",
+  "effective_date": "2026-09-28",
+  "standard_percent": 33.0,
+  "express_eu_percent": 55.25,
+  "express_non_eu_percent": 55.25
 }
